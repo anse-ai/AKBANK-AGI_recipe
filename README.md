@@ -38,7 +38,7 @@ Bu projenin yerel makinenizde (lokal) veya bir bulut platformunda çalıştırı
 1.  **Repository'i Klonlayın:**
 
     ```bash
-    git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+    git clone https://github.com/anse-ai/AKBANK-AGI_recipe.git
     cd YOUR_REPO_NAME
     ```
 
