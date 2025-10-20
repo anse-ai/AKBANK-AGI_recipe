@@ -1,8 +1,5 @@
 # AKBANK-AGI_recipe
-Bu bir cooking_recipe projesidir
-
-Akbank GenAI Bootcamp - RAG Recipe Chatbot
-Bu proje, Akbank GenAI Bootcamp: Yeni Nesil Proje Kampı  kapsamında geliştirilmiştir. Projenin ana hedefi, Retrieval-Augmented Generation (RAG)  mimarisini kullanarak bir chatbot oluşturmak ve bu chatbot'u bir web arayüzü üzerinden sunmaktır.
+ Yeni Nesil Proje Kampı  kapsamında geliştirilmiştir. Projenin ana hedefi, Retrieval-Augmented Generation (RAG)  mimarisini kullanarak bir chatbot oluşturmak ve bu chatbot'u bir web arayüzü üzerinden sunmaktır.
 
 
 Projenin Amacı 
