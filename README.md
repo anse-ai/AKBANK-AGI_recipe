@@ -67,21 +67,21 @@ Bu projenin yerel makinenizde (lokal) veya bir bulut platformunda çalıştırı
         GOOGLE_API_KEY = "YOUR_API_KEY_GOES_HERE"
         ```
 
-5.  [cite\_start]**Uygulamayı Çalıştırma:** [cite: 21]
+5.  **Uygulamayı Çalıştırma:** 
 
     ```bash
     streamlit run app.py
     ```
 
-## [cite\_start]Elde Edilen Sonuçlar & Product Kılavuzu [cite: 12, 25]
+## Elde Edilen Sonuçlar & Product Kılavuzu 
 
 Sonuç olarak, kullanıcıların sorduğu sorulara ilgili tarif veri setinden (knowledge base) bilgiler bularak cevap verebilen bir RAG tabanlı chatbot geliştirilmiştir.
 
-### [cite\_start]🌐 Live Demo Linki [cite: 13]
+### 🌐 Live Demo Linki
 
 > **[BURAYA DEPLOY ETTİĞİNİZ LİNKİ EKLEYİN (örn: Hugging Face Spaces, Streamlit Cloud, vb.)]**
 
-### [cite\_start]Ekran Görüntüleri [cite: 25]
+### Ekran Görüntüleri 
 
 Uygulamanın nasıl çalıştığını gösteren örnek ekran görüntüleri:
 
