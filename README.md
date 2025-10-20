@@ -39,7 +39,7 @@ Bu projenin yerel makinenizde (lokal) veya bir bulut platformunda çalıştırı
 
     ```bash
     git clone https://github.com/anse-ai/AKBANK-AGI_recipe.git
-    cd YOUR_REPO_NAME
+    cd AKBANK-AGI_recipe
     ```
 
 2.  **Sanal Ortam Kurulumu (Önerilen):** 
