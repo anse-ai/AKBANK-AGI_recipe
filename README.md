@@ -64,7 +64,7 @@ Bu projenin yerel makinenizde (lokal) veya bir bulut platformunda çalıştırı
       * Dosyanın içine Google AI Studio'dan aldığınız API anahtarınızı aşağıdaki gibi ekleyin:
         ```toml
         # .streamlit/secrets.toml
-        GOOGLE_API_KEY = "YOUR_API_KEY_GOES_HERE"
+        GOOGLE_API_KEY = "AIzaSyAf7D1h0eCnqSAUW-YmPpnxvUGdl1WNGi4"
         ```
 
 5.  **Uygulamayı Çalıştırma:** 
