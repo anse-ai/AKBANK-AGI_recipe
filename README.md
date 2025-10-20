@@ -1,69 +1,37 @@
-# AKBANK-AGI_recipe
- Yeni Nesil Proje Kampı  kapsamında geliştirilmiştir. Projenin ana hedefi, Retrieval-Augmented Generation (RAG)  mimarisini kullanarak bir chatbot oluşturmak ve bu chatbot'u bir web arayüzü üzerinden sunmaktır.
-
-
-This is the final and most important step to complete your project. [cite\_start]This `README.md` file combines all the project steps into one document as required by the bootcamp[cite: 8].
-
-You just need to create the files in your GitHub repository.
-
------
-
-### **Your GitHub Repository Structure**
-
-Your repository should look like this:
-
-```
-/
-├── .streamlit/
-│   └── secrets.toml     (This contains your API key)
-├── app.py               (The Streamlit app code)
-├── requirements.txt     (The list of libraries)
-└── README.md            (The file we are writing now)
-```
-
------
-
-### **The `README.md` File**
-
-Copy and paste the text below into the `README.md` file in your repository. **You will need to add your own deployment link and screenshots** once you have them.
-
------
-
-(Start of `README.md` file)
 
 # Akbank GenAI Bootcamp - RAG Recipe Chatbot
 
-[cite\_start]Bu proje, **Akbank GenAI Bootcamp: Yeni Nesil Proje Kampı** [cite: 1] kapsamında geliştirilmiştir. [cite\_start]Projenin ana hedefi, Retrieval-Augmented Generation (RAG) [cite: 2] mimarisini kullanarak bir chatbot oluşturmak ve bu chatbot'u bir web arayüzü üzerinden sunmaktır.
+Bu proje, **Akbank GenAI Bootcamp: Yeni Nesil Proje Kampı** [cite: 1] kapsamında geliştirilmiştir. [cite\_start]Projenin ana hedefi, Retrieval-Augmented Generation (RAG) [cite: 2] mimarisini kullanarak bir chatbot oluşturmak ve bu chatbot'u bir web arayüzü üzerinden sunmaktır.
 
-## [cite\_start]Projenin Amacı [cite: 9]
+## Projenin Amacı 
 
 Bu projenin amacı, kullanıcılara yemek tarifleri konusunda yardımcı olan bir "Tarif Asistanı" chatbot'u oluşturmaktır. Chatbot, kullanıcıların "Elimde tavuk, tuz ve biber var, ne yapabilirim?" gibi sorularına, sahip olduğu tarif veri setinden ilgili tarifleri bularak ve bu bilgileri kullanarak cevaplar üretebilir.
 
-## [cite\_start]Çözüm Mimarisi (Kullanılan Yöntemler) [cite: 11, 23]
+## Çözüm Mimarisi (Kullanılan Yöntemler)
 
-[cite\_start]Proje, temel olarak bir RAG (Retrieval-Augmented Generation) [cite: 23] pipeline'ı üzerine kuruludur. [cite\_start]Kullanılan teknolojiler ve mimari bileşenleri proje gereksinimlerinde belirtilen örneklere göre seçilmiştir[cite: 42, 43, 44]:
+Proje, temel olarak bir RAG (Retrieval-Augmented Generation) [cite: 23] pipeline'ı üzerine kuruludur. Kullanılan teknolojiler ve mimari bileşenleri proje gereksinimlerinde belirtilen örneklere göre seçilmiştir:
 
-  * [cite\_start]**RAG Framework:** **LangChain** [cite: 44]
+  * **RAG Framework:** **LangChain** 
       * Tüm bileşenleri (veri yükleyici, vektör deposu, retriever, LLM ve prompt) bir araya getiren ana kütüphanedir.
-  * [cite\_start]**Generation Model (LLM):** **Gemini 1.5 Flash** (Google) [cite: 42]
+  * **Generation Model (LLM):** **Gemini 1.5 Flash** (Google) 
       * Kullanıcının sorusuna ve bulunan tariflere (context) göre nihai cevabı üreten üretken yapay zeka modelidir.
-  * [cite\_start]**Embedding Model:** **Google `models/embedding-001`** [cite: 43]
+  * **Embedding Model:** **Google `models/embedding-001`**
       * Hem tarif veri setindeki tarifleri hem de kullanıcının sorusunu sayısal vektörlere dönüştürmek için kullanılan modeldir.
-  * [cite\_start]**Vector Database:** **FAISS** (Facebook AI) [cite: 43]
+  * **Vector Database:** **FAISS** (Facebook AI) 
       * Tüm tarif vektörlerini saklayan ve anlamsal olarak benzer olanları hızla bulmayı (retrieval) sağlayan yerel (local) bir vektör veritabanıdır.
   * **Web Arayüzü:** **Streamlit**
       * Frontend bilgisi gerektirmeden, Python ile hızlıca interaktif bir web arayüzü oluşturmak için kullanılmıştır.
 
-## [cite\_start]Veri Seti Hakkında Bilgi [cite: 10]
+## Veri Seti Hakkında Bilgi 
 
-[cite\_start]Projede hazır bir veri seti kullanılmıştır[cite: 17].
+Projede hazır bir veri seti kullanılmıştır.
 
   * **Veri Seti:** `m3hrdadfi/recipe_nlg_lite`
   * **Kaynak:** Hugging Face Datasets
   * **İçerik:** Bu veri seti 7,000'den fazla yemek tarifi içermektedir. Her tarif için `name` (tarif adı), `ingredients` (malzemeler) ve `steps` (hazırlanış adımları) gibi temel bilgiler bulunmaktadır.
   * **Kullanım Metodolojisi:** Veri seti yüklendikten sonra, her tarif "Tarif Adı / Malzemeler / Hazırlanışı" formatında tek bir metin belgesine dönüştürülmüş ve FAISS vektör veritabanında indekslenmiştir.
 
-## [cite\_start]Kodun Çalışma Kılavuzu [cite: 20]
+## Kodun Çalışma Kılavuzu 
 
 Bu projenin yerel makinenizde (lokal) veya bir bulut platformunda çalıştırılması için aşağıdaki adımlar izlenmelidir.
 
@@ -74,7 +42,7 @@ Bu projenin yerel makinenizde (lokal) veya bir bulut platformunda çalıştırı
     cd YOUR_REPO_NAME
     ```
 
-2.  [cite\_start]**Sanal Ortam Kurulumu (Önerilen):** [cite: 21]
+2.  **Sanal Ortam Kurulumu (Önerilen):** 
 
     ```bash
     python -m venv venv
@@ -82,7 +50,7 @@ Bu projenin yerel makinenizde (lokal) veya bir bulut platformunda çalıştırı
     ```
 
 3.  **Gerekli Kütüphanelerin Kurulumu:**
-    [cite\_start]Projenin tüm bağımlılıkları `requirements.txt` dosyasında listelenmiştir[cite: 21].
+    Projenin tüm bağımlılıkları `requirements.txt` dosyasında listelenmiştir.
 
     ```bash
     pip install -r requirements.txt
