@@ -1,6 +1,5 @@
 streamlit
-langchain
-langchain-google-genai
-langchain-community
+langchain==0.0.350
+google-generativeai
 faiss-cpu
 datasets
