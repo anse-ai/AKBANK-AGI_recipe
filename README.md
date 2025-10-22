@@ -1,7 +1,7 @@
 
 # Akbank GenAI Bootcamp - RAG Recipe Chatbot
 
-Bu proje, **Akbank GenAI Bootcamp: Yeni Nesil Proje Kampı** [cite: 1] kapsamında geliştirilmiştir. [cite\_start]Projenin ana hedefi, Retrieval-Augmented Generation (RAG) [cite: 2] mimarisini kullanarak bir chatbot oluşturmak ve bu chatbot'u bir web arayüzü üzerinden sunmaktır.
+Bu proje, **Akbank GenAI Bootcamp: Yeni Nesil Proje Kampı** kapsamında geliştirilmiştir. Projenin ana hedefi, Retrieval-Augmented Generation (RAG) mimarisini kullanarak bir chatbot oluşturmak ve bu chatbot'u bir web arayüzü üzerinden sunmaktır.
 
 ## Projenin Amacı 
 
@@ -9,7 +9,7 @@ Bu projenin amacı, kullanıcılara yemek tarifleri konusunda yardımcı olan bi
 
 ## Çözüm Mimarisi (Kullanılan Yöntemler)
 
-Proje, temel olarak bir RAG (Retrieval-Augmented Generation) [cite: 23] pipeline'ı üzerine kuruludur. Kullanılan teknolojiler ve mimari bileşenleri proje gereksinimlerinde belirtilen örneklere göre seçilmiştir:
+Proje, temel olarak bir RAG (Retrieval-Augmented Generation) pipeline'ı üzerine kuruludur. Kullanılan teknolojiler ve mimari bileşenleri proje gereksinimlerinde belirtilen örneklere göre seçilmiştir:
 
   * **RAG Framework:** **LangChain** 
       * Tüm bileşenleri (veri yükleyici, vektör deposu, retriever, LLM ve prompt) bir araya getiren ana kütüphanedir.
