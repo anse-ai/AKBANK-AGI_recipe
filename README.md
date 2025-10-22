@@ -59,8 +59,7 @@ Bu projenin yerel makinenizde (lokal) veya bir bulut platformunda çalıştırı
 4.  **API Anahtarının Ayarlanması (Secrets):**
     Projenin Google Gemini API'yi kullanabilmesi için bir API anahtarına ihtiyacı vardır.
 
-      * Proje ana dizininde `.streamlit` adında bir klasör oluşturun.
-      * İçine `secrets.toml` adında bir dosya oluşturun.
+      * "https://aistudio.google.com" adresinde API anahtarınızı alın.
       * Dosyanın içine Google AI Studio'dan aldığınız API anahtarınızı aşağıdaki gibi ekleyin:
         ```toml
         # .streamlit/secrets.toml
@@ -72,21 +71,5 @@ Bu projenin yerel makinenizde (lokal) veya bir bulut platformunda çalıştırı
     ```bash
     streamlit run app.py
     ```
-
-## Elde Edilen Sonuçlar & Product Kılavuzu 
-
-Sonuç olarak, kullanıcıların sorduğu sorulara ilgili tarif veri setinden (knowledge base) bilgiler bularak cevap verebilen bir RAG tabanlı chatbot geliştirilmiştir.
-
-### 🌐 Live Demo Linki
-
-> **[BURAYA DEPLOY ETTİĞİNİZ LİNKİ EKLEYİN (örn: Hugging Face Spaces, Streamlit Cloud, vb.)]**
-
-### Ekran Görüntüleri 
-
-Uygulamanın nasıl çalıştığını gösteren örnek ekran görüntüleri:
-
-**(Buraya uygulamanızın bir ekran görüntüsünü ekleyin)**
-
-**(Buraya chatbot'un bir soruya verdiği cevabın ekran görüntüsünü ekleyin)**
 
 (End of `README.md` file)
