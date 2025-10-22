@@ -13,6 +13,10 @@ from langchain_community.vectorstores import Chroma
 from langchain.globals import set_verbose
 set_verbose(False)
 
+# Hybrid retrieval
+from langchain_community.retrievers import BM25Retriever
+from langchain.retrievers import EnsembleRetriever
+
 # --- HF uyarılarını kıs ---
 logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
 from datasets.utils.logging import set_verbosity
@@ -21,13 +25,15 @@ set_verbosity(HF_ERROR)
 warnings.filterwarnings("ignore", message="Repo card metadata block was not found")
 
 # ==========================
-# HIZ AYARLARI
+# HIZ / GENEL AYARLAR
 # ==========================
-TOP_K_DEFAULT   = 3          # retriever k
-MAX_OUTPUT_TOK  = 384        # 256-512 arası hızlı
-SAMPLE_N        = 2000       # ilk kurulumda örneklem (tam veri istersen None yap)
-PERSIST_DIR     = "chroma_db" # indeksi diske yaz (ilk sefer yavaş, sonra hızlı)
+TOP_K_DEFAULT   = 4           # NEGATİF OLMAMALI!
+MAX_OUTPUT_TOK  = 384
+SAMPLE_N        = 5000        # ilk kez indekste hız için örneklem; tam veri istersen None
+PERSIST_DIR     = "chroma_db"  # indeksi diske yaz, sonraki açılışlar hızlı
+# NotFound yaşamamak için: v1beta + model adı -001'siz
 MODEL_NAME      = "gemini-2.5-flash"
+API_VERSION     = "v1beta"
 
 # -----------------------------
 # Safe Dataset Loader
@@ -92,6 +98,47 @@ def recipe_to_doc(example: dict) -> Document:
 def format_docs(docs):
     return "\n\n".join(d.page_content for d in docs)
 
+def normalize_ingredients(text: str) -> list[str]:
+    seps = [",", ";", "/", "+", "|", "&"]
+    t = text.lower().strip()
+    for s in seps:
+        t = t.replace(s, " ")
+    t = t.replace(" ve ", " ")
+    tokens = [tok.strip() for tok in t.split() if tok.strip()]
+    return tokens
+
+# TR ↔ EN eşlemeler (kapsamı artırmak için)
+ING_SYNONYMS = {
+    "biber": ["pepper", "bell pepper", "capsicum", "chili", "chilli"],
+    "domates": ["tomato", "tomatoes"],
+    "patlıcan": ["eggplant", "aubergine"],
+    "kabak": ["zucchini", "courgette", "squash"],
+    "maydanoz": ["parsley"],
+    "kıyma": ["minced beef", "ground beef", "minced meat", "ground meat"],
+    "tavuk": ["chicken"],
+    "süt": ["milk"],
+    "yoğurt": ["yogurt", "yoghurt"],
+    "tereyağı": ["butter"],
+    "peynir": ["cheese"],
+    "soğan": ["onion"],
+    "sarımsak": ["garlic"],
+    "pirinç": ["rice"],
+    "bulgur": ["bulgur", "cracked wheat"],
+    "yufka": ["phyllo", "filo"],
+    "un": ["flour"],
+    "şeker": ["sugar"],
+    "domates salçası": ["tomato paste"],
+    "biber salçası": ["pepper paste"],
+}
+
+def expand_query_with_synonyms(user_q: str) -> str:
+    toks = normalize_ingredients(user_q)
+    expanded = set(toks)
+    for tok in toks:
+        if tok in ING_SYNONYMS:
+            expanded.update(ING_SYNONYMS[tok])
+    return " ".join(sorted(expanded))
+
 # -----------------------------
 # CACHE: dataset -> rows
 # -----------------------------
@@ -104,25 +151,57 @@ def load_rows(sample_n=SAMPLE_N):
     return train.to_list()
 
 # -----------------------------
-# CACHE: embeddings + vectorstore (persist)
+# CACHE: embeddings + vectorstore (persist) + ENSEMBLE
 # -----------------------------
+def _safe_k(k: int, minimum: int = 1) -> int:
+    try:
+        k = int(k)
+    except Exception:
+        k = minimum
+    return max(minimum, k)
+
 @st.cache_resource(show_spinner="Vektör indeksi hazırlanıyor...")
 def build_retriever(k: int = TOP_K_DEFAULT):
+    # k'yi baştan güvene al
+    k = _safe_k(k, minimum=2)
+
     rows = load_rows()
     docs = [recipe_to_doc(r) for r in rows]
 
+    # Embedding
     embeddings = GoogleGenerativeAIEmbeddings(
         model="models/text-embedding-004",
         google_api_key=GOOGLE_API_KEY,
     )
 
-    # Eğer daha önce persist edilmişse yeniden embed etme
+    # Chroma store (persist)
     if os.path.isdir(PERSIST_DIR) and os.listdir(PERSIST_DIR):
         vectorstore = Chroma(persist_directory=PERSIST_DIR, embedding_function=embeddings)
     else:
         vectorstore = Chroma.from_documents(docs, embedding=embeddings, persist_directory=PERSIST_DIR)
 
-    return vectorstore.as_retriever(search_kwargs={"k": k})
+    # Koleksiyon boyutuna göre güvenli k
+    try:
+        coll_count = vectorstore._collection.count()
+    except Exception:
+        coll_count = None
+    k_chroma = _safe_k(min(k, coll_count) if coll_count is not None else k, minimum=1)
+
+    # Chroma retriever (semantik)
+    chroma_ret = vectorstore.as_retriever(search_kwargs={"k": k_chroma})
+
+    # BM25 retriever (anahtar kelime)
+    bm25_ret = BM25Retriever.from_documents(docs)
+    bm25_ret.k = _safe_k(min(max(2 * k, 6), len(docs)), minimum=1)
+
+    # Ensemble (birleştir)
+    ensemble_top_k = _safe_k(min(k, len(docs)), minimum=1)
+    ensemble = EnsembleRetriever(
+        retrievers=[chroma_ret, bm25_ret],
+        weights=[0.6, 0.4],
+        top_k=ensemble_top_k,
+    )
+    return ensemble
 
 # -----------------------------
 # CACHE: LLM + Prompt + Parser
@@ -131,11 +210,11 @@ def build_retriever(k: int = TOP_K_DEFAULT):
 def build_llm_and_prompt():
     llm = ChatGoogleGenerativeAI(
         model=MODEL_NAME,
-        api_version="v1",
+        api_version=API_VERSION,   # v1beta + -001'siz model → 404 yok
         temperature=0.2,
         max_output_tokens=MAX_OUTPUT_TOK,
         google_api_key=GOOGLE_API_KEY,
-        streaming=False,  # akış açık
+        streaming=False,           # istersen True yap; paket setin desteklemeli
     )
     prompt = ChatPromptTemplate.from_template(
         "Sen kısa ve net bir Tarif Asistanısın. Soruyu ve bağlamı kullanarak Türkçe, öz bir cevap ver.\n\n"
@@ -170,24 +249,47 @@ for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
 # -----------------------------
-# Yanıt (streaming)
+# Yanıt (invoke)
 # -----------------------------
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     user_q = st.session_state.messages[-1]["content"]
     with st.spinner("Tarif aranıyor ve yanıt hazırlanıyor..."):
-        docs = retriever.invoke(user_q)
+        aug_q = expand_query_with_synonyms(user_q)
+
+        docs = retriever.invoke(aug_q)
+
+        # Hiç doküman dönmezse kademeli fallback
+        if not docs:
+            try:
+                docs = retriever.invoke(aug_q + " recipe ingredients steps")
+            except Exception:
+                pass
+
+        if not docs:
+            rows = load_rows()
+            toks = normalize_ingredients(user_q)
+            hits = []
+            for r in rows:
+                blob = " ".join([(r.get("name") or ""), (r.get("ingredients") or ""), (r.get("steps") or "")]).lower()
+                if len(toks) == 1:
+                    if toks[0] in blob:
+                        hits.append(recipe_to_doc(r))
+                else:
+                    if all(t in blob for t in toks[:2]):
+                        hits.append(recipe_to_doc(r))
+                if len(hits) >= 5:
+                    break
+            docs = hits or []
+
         context_text = format_docs(docs)
-
-        # LCEL pipeline + stream
-        # chain = (prompt | llm | parser)
-        # stream = chain.stream({"input": user_q, "context": context_text})
-
         chain = (prompt | llm | parser)
-    try:
-        final_text = chain.invoke({"input": user_q, "context": context_text}).strip()
-    except Exception as e:
 
-        # Akış esnasında kaynakları topla
+        try:
+            final_text = chain.invoke({"input": user_q, "context": context_text}).strip()
+        except Exception as e:
+            final_text = f"Üretim sırasında bir sorun oluştu: {e}"
+
+        # Kaynaklar
         sources = []
         for d in docs:
             link = d.metadata.get("source_link")
@@ -195,13 +297,6 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             if link:
                 sources.append(f"- [{title}]({link})")
         sources_block = "\n\n**Sources:**\n" + "\n".join(sorted(set(sources))) if sources else ""
-
-        # Streamlit'e canlı yazdır
-        # final_text = st.write_stream(stream)
-        # final_text = (final_text or "").strip() + sources_block
-
-        final_text = f"Üretim sırasında bir sorun oluştu: {e}"
-
         final_text += sources_block
 
     st.session_state.messages.append({"role": "assistant", "content": final_text})
