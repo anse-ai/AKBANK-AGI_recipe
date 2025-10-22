@@ -174,7 +174,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
     user_q = st.session_state.messages[-1]["content"]
     with st.spinner("Tarif aranıyor ve yanıt hazırlanıyor..."):
         # Retrieve docs (no chains module)
-        docs = retriever.get_relevant_documents(user_q)
+        docs = retriever.invoke(user_q) 
         context_text = format_docs(docs)
 
         # LCEL pipeline: prompt -> llm -> parser
